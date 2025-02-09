@@ -4,10 +4,10 @@ import { Resend } from "resend";
 export async function POST(request: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const emailTo = process.env.EMAIL_TO;
-  
+
   if (!emailTo) {
     return NextResponse.json(
-      { error: { message: "EMAIL_TO is not setup." } },
+      { error: { message: "Env variables are not setup." } },
       { status: 500 }
     );
   }
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   if (!isSubmissionDataValid(submissionData)) {
     return NextResponse.json(
-      { error: { message: "Invalid submission data." } },
+      { error: { message: "Invalid data." } },
       { status: 400 }
     );
   }
@@ -37,17 +37,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: {
-          message: `Could not sed email due to an error from resend.dev: ${result.error.name}`,
+          message: `Could not send due to an error from the underlying service: ${result.error.name}`,
         },
       },
       { status: 500 }
     );
   }
 
-  return NextResponse.json(
-    { message: "Email sent successfully!" },
-    { status: 200 }
-  );
+  return NextResponse.json({}, { status: 200 });
 }
 
 type SubmissionData = {
