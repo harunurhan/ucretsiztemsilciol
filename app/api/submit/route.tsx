@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const emailTo = process.env.EMAIL_TO;
-
 export async function POST(request: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const emailTo = process.env.EMAIL_TO;
+  
   if (!emailTo) {
     return NextResponse.json(
       { error: { message: "EMAIL_TO is not setup." } },
