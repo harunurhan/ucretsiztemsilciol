@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   const result = await resend.emails.send({
     from: "ucretsiztemsilciol <onboarding@resend.dev>",
     to: [emailTo],
-    subject: "Temsilci Başvurusu [ucretsiztemsilciol.com.tr]",
+    subject: `Temsilci Başvurusu: ${submissionData.name}`,
     html: `<p>Ad Soyad: ${submissionData.name}, Dogum Tarihi: ${submissionData.birthdate}, Telefon: ${submissionData.phone}</p>`,
   });
 
