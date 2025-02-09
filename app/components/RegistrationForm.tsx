@@ -1,21 +1,65 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { get18YearsAgo } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { set } from "date-fns";
+import { CheckCircle, Sparkles } from "lucide-react";
+import { useState } from "react";
+
+const localStorageKeyPrefix = "previousSubmissions_V1";
+
+function getLocalStorageKey(name: string, phone: string): string {
+  return `${localStorageKeyPrefix}_${name}_${phone}`;
+}
+
+function hasPreviousSubmission(name: string, phone: string): boolean {
+  const localStorageKey = getLocalStorageKey(name, phone);
+  return !!localStorage.getItem(localStorageKey);
+}
+
+function saveSuccessfulSubmission(name: string, phone: string): void {
+  const localStorageKey = getLocalStorageKey(name, phone);
+  localStorage.setItem(localStorageKey, "true");
+}
 
 export default function RegistrationForm() {
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [hasSubmitted, setSubmitted] = useState(false);
+
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        fetch("/api/submit", {
-          body: formData,
-          method: "POST",
-        })
+
+        const name = formData.get("name")?.toString();
+        const phone = formData.get("phone")?.toString();
+
+        if (!name || !phone) {
+          // TODO: Show error message to the user
+          console.error("Name or phone is missing");
+          return;
+        }
+
+        if (hasPreviousSubmission(name, phone)) {
+          // TODO: Show error message to the user
+          console.error("Already submitted");
+          return;
+        }
+
+        try {
+          setSubmitting(true);
+          await fetch("/api/submit", {
+            body: formData,
+            method: "POST",
+          });
+          saveSuccessfulSubmission(name, phone);
+          setSubmitted(true);
+        } finally {
+          setSubmitting(false);
+        }
       }}
       className="bg-white/10 backdrop-blur-md rounded-lg p-6 space-y-4 shadow-glow"
     >
@@ -57,10 +101,22 @@ export default function RegistrationForm() {
           className="bg-white/10 text-white border-white/20 focus:border-white"
         />
       </div>
-      <Button className="w-full bg-primary hover:bg-primary/90 text-white group transition-all duration-300">
+      <Button
+        disabled={isSubmitting}
+        className="w-full bg-primary hover:bg-primary/90 text-white group transition-all duration-300"
+      >
         HEMEN BAŞVUR
         <Sparkles className="ml-2 h-4 w-4 group-hover:animate-pulse" />
       </Button>
+      {hasSubmitted && (
+        <p className="text-white text-center">
+          <CheckCircle style={{ display: "inline-block" }} />{" "}
+          <span>
+            Basvurunuz için teşekkür ederiz. En kısa sürede sizinle iletişime
+            geçeceğiz.
+          </span>
+        </p>
+      )}
     </form>
   );
 }
