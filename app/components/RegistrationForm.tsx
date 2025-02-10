@@ -51,12 +51,15 @@ export default function RegistrationForm() {
 
         try {
           setSubmitting(true);
-          await fetch("/api/submit", {
+          const response = await fetch("/api/submit", {
             body: formData,
             method: "POST",
           });
-          saveSuccessfulSubmission(name, phone);
-          setSubmitted(true);
+
+          if (response.ok) {
+            saveSuccessfulSubmission(name, phone);
+            setSubmitted(true);
+          }
         } finally {
           setSubmitting(false);
         }
