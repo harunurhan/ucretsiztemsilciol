@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { get18YearsAgo } from "@/lib/utils";
-import { set } from "date-fns";
-import { CheckCircle, Sparkles } from "lucide-react";
+import { CheckCircle, CircleAlert, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 const localStorageKeyPrefix = "previousSubmissions_V1";
@@ -27,6 +26,7 @@ function saveSuccessfulSubmission(name: string, phone: string): void {
 export default function RegistrationForm() {
   const [isSubmitting, setSubmitting] = useState(false);
   const [hasSubmitted, setSubmitted] = useState(false);
+  const [hasError, setError] = useState(false);
 
   return (
     <form
@@ -51,6 +51,9 @@ export default function RegistrationForm() {
 
         try {
           setSubmitting(true);
+          setError(false);
+          setSubmitted(false);
+
           const response = await fetch("/api/submit", {
             body: formData,
             method: "POST",
@@ -59,7 +62,11 @@ export default function RegistrationForm() {
           if (response.ok) {
             saveSuccessfulSubmission(name, phone);
             setSubmitted(true);
+          } else {
+            setError(true);
           }
+        } catch (error) {
+          setError(true);
         } finally {
           setSubmitting(false);
         }
@@ -117,6 +124,14 @@ export default function RegistrationForm() {
           <span>
             Basvurunuz için teşekkür ederiz. En kısa sürede sizinle iletişime
             geçeceğiz.
+          </span>
+        </p>
+      )}
+      {hasError && (
+        <p className="text-white text-center">
+          <CircleAlert style={{ display: "inline-block" }} />{" "}
+          <span>
+            Basvurunuz bir hata nedeniyle gönderilemedi. Lütfen tekrar deneyin.
           </span>
         </p>
       )}
