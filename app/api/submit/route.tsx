@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
+import { createTransport } from "nodemailer";
 
 export async function POST(request: NextRequest) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const emailTo = process.env.EMAIL_TO;
-
-  if (!emailTo) {
-    return NextResponse.json(
-      { error: { message: "Env variables are not setup." } },
-      { status: 500 }
-    );
-  }
-
   const formData = await request.formData();
   const submissionData = {
     name: formData.get("name")?.toString(),
@@ -26,18 +16,43 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await resend.emails.send({
-    from: "ucretsiztemsilciol <onboarding@resend.dev>",
-    to: [emailTo],
+  const emailTo = process.env.EMAIL_TO;
+  const emailFrom = process.env.EMAIL_FROM;
+  const emailPassword = process.env.EMAIL_PASSWORD;
+
+  if (!emailTo || !emailFrom || !emailPassword) {
+    return NextResponse.json(
+      { error: { message: "Env variables are not setup." } },
+      { status: 500 }
+    );
+  }
+
+  const transporter = createTransport({
+    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: emailFrom,
+      pass: emailPassword,
+    },
+  });
+
+  const result = await transporter.sendMail({
+    from: emailFrom,
+    to: emailTo,
     subject: `Temsilci Başvurusu: ${submissionData.name}`,
     html: `<p>Ad Soyad: ${submissionData.name}, Dogum Tarihi: ${submissionData.birthdate}, Telefon: ${submissionData.phone}</p>`,
   });
 
-  if (result.error) {
+  if (
+    (result.rejected && result.rejected.includes(emailTo)) ||
+    (result.pending && result.pending.includes(emailTo))
+  ) {
     return NextResponse.json(
       {
         error: {
-          message: `Could not send due to an error from the underlying service: ${result.error.name}`,
+          message: `Rejected by the underlying service.`,
         },
       },
       { status: 500 }
