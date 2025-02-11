@@ -112,6 +112,7 @@ export default function RegistrationForm() {
         />
       </div>
       <Button
+        type="submit"
         disabled={isSubmitting}
         className="w-full bg-primary hover:bg-primary/90 text-white group transition-all duration-300"
       >
@@ -119,7 +120,7 @@ export default function RegistrationForm() {
         <Sparkles className="ml-2 h-4 w-4 group-hover:animate-pulse" />
       </Button>
       {hasSubmitted && (
-        <p className="text-white text-center">
+        <p className="text-white text-center" role="alert">
           <CheckCircle style={{ display: "inline-block" }} />{" "}
           <span>
             Basvurunuz için teşekkür ederiz. En kısa sürede sizinle iletişime
@@ -128,7 +129,7 @@ export default function RegistrationForm() {
         </p>
       )}
       {hasError && (
-        <p className="text-white text-center">
+        <p className="text-white text-center" role="alert">
           <CircleAlert style={{ display: "inline-block" }} />{" "}
           <span>
             Basvurunuz bir hata nedeniyle gönderilemedi. Lütfen tekrar deneyin.
